@@ -1,7 +1,9 @@
 # 🏥 MediCare - Hospital Management System
 
 A full-stack Hospital Management System built with the MERN stack, enabling patients to book appointments with doctors and doctors to manage their appointment requests in real time.
-
+## Live Demo
+- Frontend: https://hospital-management-system-indol-chi.vercel.app
+- Backend API: https://hospital-management-system-l69l.onrender.com
 ## Features
 
 - **Role-based Authentication** — JWT-based auth with separate flows for patients and doctors
