@@ -157,7 +157,7 @@ function DoctorDashboard() {
     }
 
     try {
-      const res = await axios.get('http://localhost:5000/api/appointments/doctor', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/appointments/doctor`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAppointments(res.data);
@@ -183,7 +183,7 @@ function DoctorDashboard() {
     setUpdatingId(id);
     try {
       await axios.put(
-        `http://localhost:5000/api/appointments/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/appointments/${id}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );

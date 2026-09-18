@@ -114,7 +114,7 @@ function Dashboard() {
       }
 
       try {
-        const res = await axios.get('http://localhost:5000/api/appointments/patient', {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/appointments/patient`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAppointments(res.data);

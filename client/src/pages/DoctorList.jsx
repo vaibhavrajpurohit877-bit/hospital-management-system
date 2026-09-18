@@ -22,7 +22,7 @@ function DoctorList() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/doctor');
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor`);
         setDoctors(res.data);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load doctors. Please try again later.');
@@ -73,7 +73,7 @@ function DoctorList() {
     setSubmitting(true);
     try {
       await axios.post(
-        'http://localhost:5000/api/appointments',
+        `${import.meta.env.VITE_API_URL}/api/appointments`,
         { doctorId: selectedDoctor._id, date, time },
         { headers: { Authorization: `Bearer ${token}` } }
       );
