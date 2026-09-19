@@ -42,11 +42,13 @@ function formatDate(dateStr) {
   }
 }
 
-function AppointmentCard({ appointment }) {
+function AppointmentCard({ appointment, onPay, payingId }) {
   const doctor = appointment.doctorId;
   const doctorName = doctor?.userId?.name || 'Unknown Doctor';
   const specialization = doctor?.specialization || '—';
   const borderColor = statusBorder[appointment.status] || 'border-l-gray-300';
+  const isPaying = payingId === appointment._id;
+  const showPayButton = appointment.status === 'accepted' && appointment.paymentStatus !== 'paid';
 
   return (
     <div className={`bg-white rounded-xl shadow-md border border-gray-100 border-l-4 ${borderColor} p-5 hover:shadow-lg transition-shadow`}>
@@ -62,6 +64,7 @@ function AppointmentCard({ appointment }) {
         </div>
         <StatusBadge status={appointment.status} />
       </div>
+
       <div className="mt-4 flex items-center gap-4 text-sm text-gray-600 border-t border-gray-100 pt-3">
         <span className="flex items-center gap-1.5">
           <span className="text-gray-400">📅</span> {formatDate(appointment.date)}
@@ -70,11 +73,30 @@ function AppointmentCard({ appointment }) {
           <span className="text-gray-400">🕐</span> {appointment.time}
         </span>
       </div>
+
+      {appointment.status === 'accepted' && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          {appointment.paymentStatus === 'paid' ? (
+            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 bg-green-50 px-3 py-1.5 rounded-lg">
+              ✓ Paid
+              {doctor?.fees != null && <span className="text-green-600">(₹{doctor.fees})</span>}
+            </span>
+          ) : (
+            <button
+              onClick={() => onPay(appointment)}
+              disabled={isPaying}
+              className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {isPaying ? 'Processing...' : `Pay Now ₹${doctor?.fees ?? 0}`}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function AppointmentSection({ title, appointments, emptyMessage, accentColor }) {
+function AppointmentSection({ title, appointments, emptyMessage, accentColor, onPay, payingId }) {
   return (
     <section className="mb-10">
       <div className="flex items-center gap-2 mb-4">
@@ -90,7 +112,12 @@ function AppointmentSection({ title, appointments, emptyMessage, accentColor }) 
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {appointments.map((appointment) => (
-            <AppointmentCard key={appointment._id} appointment={appointment} />
+            <AppointmentCard
+              key={appointment._id}
+              appointment={appointment}
+              onPay={onPay}
+              payingId={payingId}
+            />
           ))}
         </div>
       )}
@@ -104,34 +131,97 @@ function Dashboard() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [payingId, setPayingId] = useState(null);
+  const [paymentError, setPaymentError] = useState('');
+  const [paymentSuccess, setPaymentSuccess] = useState('');
+
+  const fetchAppointments = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/appointments/patient`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAppointments(res.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load appointments. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/appointments/patient`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAppointments(res.data);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load appointments. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAppointments();
-  }, [navigate]);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/');
+  };
+
+  const handlePay = async (appointment) => {
+    setPaymentError('');
+    setPaymentSuccess('');
+    const token = localStorage.getItem('token');
+
+    setPayingId(appointment._id);
+    try {
+      const orderRes = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/payment/create-order`,
+        { appointmentId: appointment._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { orderId, amount, currency, keyId } = orderRes.data;
+
+      const options = {
+        key: keyId,
+        amount,
+        currency,
+        order_id: orderId,
+        name: 'MediCare',
+        description: `Consultation with Dr. ${appointment.doctorId?.userId?.name || ''}`,
+        handler: async function (response) {
+          try {
+            await axios.post(
+              `${import.meta.env.VITE_API_URL}/api/payment/verify`,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                appointmentId: appointment._id,
+              },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setPaymentSuccess('Payment successful!');
+            fetchAppointments();
+          } catch (err) {
+            setPaymentError(err.response?.data?.message || 'Payment verification failed.');
+          } finally {
+            setPayingId(null);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPayingId(null);
+          },
+        },
+        theme: {
+          color: '#2563eb',
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      setPaymentError(err.response?.data?.message || 'Failed to start payment. Please try again.');
+      setPayingId(null);
+    }
   };
 
   const upcoming = appointments.filter(
@@ -166,6 +256,18 @@ function Dashboard() {
           </div>
         </div>
 
+        {paymentSuccess && (
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
+            <span className="text-lg">✓</span> {paymentSuccess}
+          </div>
+        )}
+
+        {paymentError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {paymentError}
+          </div>
+        )}
+
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -186,18 +288,24 @@ function Dashboard() {
               appointments={upcoming}
               emptyMessage="No upcoming appointments"
               accentColor="bg-blue-100 text-blue-700"
+              onPay={handlePay}
+              payingId={payingId}
             />
             <AppointmentSection
               title="Completed Appointments"
               appointments={completed}
               emptyMessage="No completed appointments"
               accentColor="bg-green-100 text-green-700"
+              onPay={handlePay}
+              payingId={payingId}
             />
             <AppointmentSection
               title="Cancelled Appointments"
               appointments={cancelled}
               emptyMessage="No cancelled appointments"
               accentColor="bg-red-100 text-red-700"
+              onPay={handlePay}
+              payingId={payingId}
             />
           </>
         )}

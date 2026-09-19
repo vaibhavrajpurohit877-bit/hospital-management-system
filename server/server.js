@@ -12,6 +12,7 @@ const authRoutes = require("./routes/auth");
 const patientRoutes = require('./routes/patient');
 const doctorRoutes = require('./routes/doctor');
 const appointmentRoutes = require('./routes/appointment');
+const paymentRoutes = require('./routes/payment');
 
 // Create the Express application instance
 const app = express();
@@ -27,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use('/api/patient', patientRoutes);
 app.use('/api/doctor', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/payment', paymentRoutes);
 
 const authMiddleware = require('./middleware/authMiddleware');
 

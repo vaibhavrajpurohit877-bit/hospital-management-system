@@ -182,8 +182,7 @@ function DoctorDashboard() {
 
     setUpdatingId(id);
     try {
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/appointments/${id}`,
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/appointments/${id}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );

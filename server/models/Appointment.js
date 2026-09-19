@@ -12,17 +12,28 @@ const appointmentSchema = new mongoose.Schema({
     required: true
   },
   date: {
-    type: String, // e.g. "2026-08-15" — keeping it simple as a string for MVP
+    type: String,
     required: true
   },
   time: {
-    type: String, // e.g. "10:30 AM"
+    type: String,
     required: true
   },
   status: {
     type: String,
     enum: ['pending', 'accepted', 'rejected', 'completed'],
     default: 'pending'
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'paid'],
+    default: 'pending'
+  },
+  razorpayOrderId: {
+    type: String
+  },
+  razorpayPaymentId: {
+    type: String
   }
 }, { timestamps: true });
 
