@@ -13,6 +13,7 @@ const patientRoutes = require('./routes/patient');
 const doctorRoutes = require('./routes/doctor');
 const appointmentRoutes = require('./routes/appointment');
 const paymentRoutes = require('./routes/payment');
+const reportRoutes = require('./routes/report');
 
 // Create the Express application instance
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/payment', paymentRoutes);
 
 const authMiddleware = require('./middleware/authMiddleware');
+app.use('/api/reports', reportRoutes);
 
 // Connect to MongoDB using the URI from environment variables
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/hospital";

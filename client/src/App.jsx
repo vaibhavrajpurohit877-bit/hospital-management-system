@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import DoctorList from './pages/DoctorList';
 import DoctorDashboard from './pages/DoctorDashboard';
+import AIDiagnosis from './pages/AIDiagnosis';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
         <Route path="/doctors" element={<DoctorList />} />
+        <Route path="/ai-diagnosis" element={<AIDiagnosis />} />
       </Routes>
     </BrowserRouter>
   );

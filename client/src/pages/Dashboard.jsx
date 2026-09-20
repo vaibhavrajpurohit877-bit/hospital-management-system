@@ -246,6 +246,14 @@ function Dashboard() {
               >
                 Find Doctors
               </Link>
+
+              <Link
+                to="/ai-diagnosis"
+                className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors"
+              >
+               AI Diagnosis
+              </Link>
+              
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 rounded-lg font-medium border border-white/40 text-white hover:bg-white/10 transition-colors"
