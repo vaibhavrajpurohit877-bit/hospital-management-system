@@ -1,6 +1,7 @@
 # 🏥 MediCare - Hospital Management System
 
-A full-stack Hospital Management System built with the MERN stack, enabling patients to book appointments with doctors and doctors to manage their appointment requests in real time.
+A full-stack Hospital Management System built with the MERN stack, enabling patients to discover doctors, book appointments, track appointment status, and securely pay consultation fees online using Razorpay. Doctors can manage appointment requests and update their status through dedicated dashboards.
+.
 ## Live Demo
 - Frontend: https://hospital-management-system-indol-chi.vercel.app
 - Backend API: https://hospital-management-system-l69l.onrender.com
@@ -10,6 +11,8 @@ A full-stack Hospital Management System built with the MERN stack, enabling pati
 - **Doctor Discovery** — Patients can browse available doctors with specialization, experience, fees, and availability
 - **Appointment Booking** — Patients can book appointments with their preferred date and time
 - **Appointment Lifecycle Management** — Doctors can accept, reject, or mark appointments as completed
+- * **Online Payment Integration** — Razorpay Test Mode integration for consultation fee payments, including order creation, Razorpay Checkout, backend payment signature verification, and payment status tracking.
+
 - **Role-based Dashboards** — Separate, tailored dashboards for patients and doctors showing relevant appointment data
 - **Responsive UI** — Clean, modern interface built with Tailwind CSS
 
@@ -27,6 +30,8 @@ A full-stack Hospital Management System built with the MERN stack, enabling pati
 - MongoDB (Mongoose)
 - JWT Authentication
 - bcryptjs
+- Razorpay Payment API
+
 
 ## Project Structure
 
@@ -84,13 +89,25 @@ Visit `http://localhost:5173`
 | GET | `/api/appointments/patient` | Get logged-in patient's appointments |
 | GET | `/api/appointments/doctor` | Get logged-in doctor's appointments |
 | PUT | `/api/appointments/:id` | Update appointment status |
+| POST | `/api/payment/create-order` | Create a Razorpay payment order |
+| POST | `/api/payment/verify` | Verify Razorpay payment signature and update appointment payment status |
+
+## Payment Flow
+
+1. Doctor accepts an appointment.
+2. Patient clicks **Pay Now**.
+3. Backend creates a Razorpay order using the consultation fee.
+4. Patient completes payment through Razorpay Checkout.
+5. Backend verifies the Razorpay payment signature.
+6. The appointment is marked as **Paid** in MongoDB.
 
 ## Future Improvements
 
-- AI-based X-ray diagnosis module (pneumonia detection)
-- Admin panel for managing doctors and patients
-- Email/SMS appointment reminders
-- Payment integration for consultation fees
+* AI-based X-ray diagnosis module (pneumonia detection)
+* Admin panel for managing doctors and patients
+* Email/SMS appointment reminders
+* Digital medical reports and prescription management
+* Advanced hospital analytics and reporting
 
 ## Author
 
