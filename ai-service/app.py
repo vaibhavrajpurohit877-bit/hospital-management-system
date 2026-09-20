@@ -3,6 +3,7 @@ from flask_cors import CORS
 from transformers import pipeline
 from PIL import Image
 import io
+import os
 
 app = Flask(__name__)
 CORS(app)  # allows your React frontend to call this API
@@ -41,4 +42,4 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=False, port=5001)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5001)))
